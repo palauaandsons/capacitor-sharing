@@ -38,7 +38,7 @@ import java.io.FileOutputStream
     ),
     Permission(
       strings = [
-        Manifest.permission.READ_MEDIA_IMAGES
+        // Manifest.permission.READ_MEDIA_IMAGES
       ]
     )
   ]
@@ -196,15 +196,9 @@ class SharingPlugin : Plugin() {
     // On Android, we need to check storage permissions
     val result = JSObject()
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      // Android 13+: READ_MEDIA_IMAGES permission
-      val hasPermission = getPermissionState(Manifest.permission.READ_MEDIA_IMAGES)
-      result.put("value", hasPermission)
-    } else {
-      // Android 12 and lower: WRITE_EXTERNAL_STORAGE permission
-      val hasPermission = getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-      result.put("value", hasPermission)
-    }
+    // Android 12 and lower: WRITE_EXTERNAL_STORAGE permission
+    val hasPermission = getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    result.put("value", hasPermission)
 
     call.resolve(result)
   }
@@ -214,29 +208,16 @@ class SharingPlugin : Plugin() {
     // Save the call for later
     saveCall(call)
 
-    // Determine which permission to request based on Android version
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      // Android 13+: READ_MEDIA_IMAGES permission
-      requestPermissionForAlias("storage", call, "photoLibraryPermissionsCallback")
-    } else {
-      // Android 12 and lower: WRITE_EXTERNAL_STORAGE permission
-      requestPermissionForAlias("storage", call, "photoLibraryPermissionsCallback")
-    }
+    // Android 12 and lower: WRITE_EXTERNAL_STORAGE permission
+    requestPermissionForAlias("storage", call, "photoLibraryPermissionsCallback")
   }
 
   @PermissionCallback
   private fun photoLibraryPermissionsCallback(call: PluginCall) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      val hasPermission = getPermissionState(Manifest.permission.READ_MEDIA_IMAGES)
-      val result = JSObject()
-      result.put("value", hasPermission)
-      call.resolve(result)
-    } else {
-      val hasPermission = getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-      val result = JSObject()
-      result.put("value", hasPermission)
-      call.resolve(result)
-    }
+    val hasPermission = getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    val result = JSObject()
+    result.put("value", hasPermission)
+    call.resolve(result)
   }
 
   @PluginMethod
